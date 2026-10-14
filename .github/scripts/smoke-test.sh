@@ -40,7 +40,13 @@ while read -r app tag; do
     docker exec "$name" test -x "/usr/bin/${app}"
     docker exec "$name" test -f "/usr/share/applications/ai.storyteller.${app}.desktop"
     installed=$(docker exec "$name" dpkg-query -W '-f=${Version}' "$app")
-    docker exec "$name" dpkg --compare-versions "$installed" eq "${tag#v}"
+    # Debian adds its packaging revision (for example 0.7.0-1) to the app version.
+    upstream=${installed%-*}
+    upstream=${upstream#*:}
+    if [[ "$upstream" != "${tag#v}" ]]; then
+        echo "${app}: installed ${installed}, expected upstream ${tag#v}" >&2
+        exit 1
+    fi
     echo "Verified ${app} ${installed}"
 done < <(jq -r 'to_entries[] | "\(.key) \(.value)"' root/defaults/craft-releases.json)
 
