@@ -34,9 +34,22 @@ app_setup_block: |
 
   * https://yourhost:3001/
 
-  All thirteen apps listed at https://getartcraft.com/apps are included. Each image build resolves the latest stable GitHub release independently for each app (PhotoCraft can be overridden with PHOTOCRAFT_RELEASE). Rebuild with --pull --no-cache to refresh all apps; restarting an existing container does not update the installed apps.
+  Apps from the official catalog at https://getartcraft.com/apps are included. The verified release inventory is recorded in root/defaults/craft-releases.json. GitHub Actions checks the catalog and latest stable releases on each build, commits compatible new apps and version changes, and builds native x86-64 and ARM64 images from that same inventory. New apps must provide both Debian packages and the expected desktop launcher; incompatible changes fail for manual review. Apps are never automatically removed.
 
-  This is a community fork. Build this repository locally to use the additional apps; the linuxserver/craft-apps images in the generated examples are published by upstream and do not contain this fork's changes.
+  Images are published at ghcr.io/timminater/docker-craft-apps:latest (both architectures), with amd64-latest and arm64v8-latest aliases. The build runs on relevant master pushes, manual dispatch and every Monday at 03:17 UTC. Scheduled builds also refresh the base image. Startup, installed package versions and restart with existing /config are checked before publishing. The multi-architecture latest tag is only updated after both architectures succeed.
+
+  Example:
+
+  ```bash
+  docker run -d --name craft-apps --security-opt seccomp=unconfined --shm-size=1g -e PUID=1000 -e PGID=1000 -e TZ=Europe/Amsterdam -p 3001:3001 -v /path/to/craft-apps/config:/config ghcr.io/timminater/docker-craft-apps:latest
+  ```
+
+  Publishing uses the repository GITHUB_TOKEN; no registry password or personal access token needs to be configured. GitHub initially creates personal GHCR packages as private: the owner can authenticate to pull them or change package visibility to public in the package settings for anonymous pulls. A failed update/build is reported in Actions and leaves the existing latest image available.
+
+  When building locally without CRAFT_RELEASES, each image build resolves the latest stable GitHub release independently for each app (PhotoCraft can be overridden with PHOTOCRAFT_RELEASE). Rebuild with --pull --no-cache to refresh all apps; restarting an existing container does not update the installed apps.
+
+  This is a community fork. The linuxserver/craft-apps images in the generated examples are published by upstream; use the GHCR image above for this fork.
+
 # init diagram
 init_diagram: |
   "craft-apps:latest": {
@@ -110,5 +123,6 @@ init_diagram: |
   "craft-apps:latest" <- Base Images
 # changelog
 changelogs:
+  - {date: "15.10.26:", desc: "Build and test native multi-architecture GHCR images with weekly app catalog and release updates."}
   - {date: "15.10.26:", desc: "Include all thirteen Craft apps on x86-64 and ARM64 with desktop shortcuts and menus; fail builds on release download errors."}
   - {date: "11.10.26:", desc: "Initial release."}

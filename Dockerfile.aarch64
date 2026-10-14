@@ -6,6 +6,7 @@ FROM ghcr.io/linuxserver/baseimage-selkies:arm64v8-ubunturesolute
 ARG BUILD_DATE
 ARG VERSION
 ARG PHOTOCRAFT_RELEASE
+ARG CRAFT_RELEASES
 LABEL build_version="Linuxserver.io version:- ${VERSION} Build-date:- ${BUILD_DATE}"
 LABEL maintainer="thelamer"
 
@@ -32,16 +33,24 @@ RUN \
     xdg-desktop-portal-gtk && \
   echo "**** install photocraft ****" && \
   if [ -z ${PHOTOCRAFT_RELEASE+x} ]; then \
-    PHOTOCRAFT_RELEASE=$(curl -fsSL "https://api.github.com/repos/storytold/photocraft/releases/latest" \
-      | jq -er '.tag_name | select(type == "string" and length > 0)') || exit 1; \
+    if [ -n "${CRAFT_RELEASES:-}" ]; then \
+      PHOTOCRAFT_RELEASE=$(printf '%s' "${CRAFT_RELEASES}" | jq -er '.photocraft') || exit 1; \
+    else \
+      PHOTOCRAFT_RELEASE=$(curl -fsSL "https://api.github.com/repos/storytold/photocraft/releases/latest" \
+        | jq -er '.tag_name | select(type == "string" and length > 0)') || exit 1; \
+    fi; \
   fi && \
   curl -f -o \
     /tmp/photocraft.deb -L \
     "https://github.com/storytold/photocraft/releases/download/${PHOTOCRAFT_RELEASE}/photocraft-$(echo ${PHOTOCRAFT_RELEASE} | sed 's/^v//g')-linux-aarch64.deb" && \
   echo "**** install craft suite ****" && \
   for APP in cadcraft deckcraft designcraft effectcraft figcraft filmcraft gridcraft lightcraft pdfcraft soundcraft vectorcraft wordcraft; do \
-    APP_RELEASE=$(curl -fsSL "https://api.github.com/repos/storytold/${APP}/releases/latest" \
-      | jq -er '.tag_name | select(type == "string" and length > 0)') && \
+    if [ -n "${CRAFT_RELEASES:-}" ]; then \
+      APP_RELEASE=$(printf '%s' "${CRAFT_RELEASES}" | jq -er --arg app "${APP}" '.[$app]') || exit 1; \
+    else \
+      APP_RELEASE=$(curl -fsSL "https://api.github.com/repos/storytold/${APP}/releases/latest" \
+        | jq -er '.tag_name | select(type == "string" and length > 0)') || exit 1; \
+    fi && \
     curl -f -o \
       /tmp/${APP}.deb -L \
       "https://github.com/storytold/${APP}/releases/download/${APP_RELEASE}/${APP}-$(echo ${APP_RELEASE} | sed 's/^v//g')-linux-aarch64.deb" || exit 1; \

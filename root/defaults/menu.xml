@@ -4,18 +4,18 @@
 <item label="xterm" icon="/usr/share/pixmaps/xterm-color_48x48.xpm"><action name="Execute"><command>/usr/bin/xterm</command></action></item>
 <item label="Caja" icon="/usr/share/icons/Adwaita/symbolic/legacy/system-file-manager-symbolic.svg"><action name="Execute"><command>/usr/bin/caja</command></action></item>
 <item label="Chromium" icon="/usr/share/icons/hicolor/48x48/apps/chromium.png"><action name="Execute"><command>/usr/bin/chromium</command></action></item>
-<item label="PhotoCraft" icon="/usr/share/icons/hicolor/48x48/apps/ai.storyteller.photocraft.png"><action name="Execute"><command>/usr/bin/photocraft</command></action></item>
-<item label="VectorCraft" icon="/usr/share/icons/hicolor/48x48/apps/ai.storyteller.vectorcraft.png"><action name="Execute"><command>/usr/bin/vectorcraft</command></action></item>
+<item label="CADCraft" icon="/usr/share/icons/hicolor/48x48/apps/ai.storyteller.cadcraft.png"><action name="Execute"><command>/usr/bin/cadcraft</command></action></item>
+<item label="DeckCraft" icon="/usr/share/icons/hicolor/48x48/apps/ai.storyteller.deckcraft.png"><action name="Execute"><command>/usr/bin/deckcraft</command></action></item>
+<item label="DesignCraft" icon="/usr/share/icons/hicolor/48x48/apps/ai.storyteller.designcraft.png"><action name="Execute"><command>/usr/bin/designcraft</command></action></item>
+<item label="EffectCraft" icon="/usr/share/icons/hicolor/48x48/apps/ai.storyteller.effectcraft.png"><action name="Execute"><command>/usr/bin/effectcraft</command></action></item>
+<item label="FigCraft" icon="/usr/share/icons/hicolor/48x48/apps/ai.storyteller.figcraft.png"><action name="Execute"><command>/usr/bin/figcraft</command></action></item>
 <item label="FilmCraft" icon="/usr/share/icons/hicolor/48x48/apps/ai.storyteller.filmcraft.png"><action name="Execute"><command>/usr/bin/filmcraft</command></action></item>
+<item label="GridCraft" icon="/usr/share/icons/hicolor/48x48/apps/ai.storyteller.gridcraft.png"><action name="Execute"><command>/usr/bin/gridcraft</command></action></item>
 <item label="LightCraft" icon="/usr/share/icons/hicolor/48x48/apps/ai.storyteller.lightcraft.png"><action name="Execute"><command>/usr/bin/lightcraft</command></action></item>
 <item label="PdfCraft" icon="/usr/share/icons/hicolor/48x48/apps/ai.storyteller.pdfcraft.png"><action name="Execute"><command>/usr/bin/pdfcraft</command></action></item>
-<item label="EffectCraft" icon="/usr/share/icons/hicolor/48x48/apps/ai.storyteller.effectcraft.png"><action name="Execute"><command>/usr/bin/effectcraft</command></action></item>
-<item label="DesignCraft" icon="/usr/share/icons/hicolor/48x48/apps/ai.storyteller.designcraft.png"><action name="Execute"><command>/usr/bin/designcraft</command></action></item>
-<item label="FigCraft" icon="/usr/share/icons/hicolor/48x48/apps/ai.storyteller.figcraft.png"><action name="Execute"><command>/usr/bin/figcraft</command></action></item>
-<item label="WordCraft" icon="/usr/share/icons/hicolor/48x48/apps/ai.storyteller.wordcraft.png"><action name="Execute"><command>/usr/bin/wordcraft</command></action></item>
+<item label="PhotoCraft" icon="/usr/share/icons/hicolor/48x48/apps/ai.storyteller.photocraft.png"><action name="Execute"><command>/usr/bin/photocraft</command></action></item>
 <item label="SoundCraft" icon="/usr/share/icons/hicolor/48x48/apps/ai.storyteller.soundcraft.png"><action name="Execute"><command>/usr/bin/soundcraft</command></action></item>
-<item label="DeckCraft" icon="/usr/share/icons/hicolor/48x48/apps/ai.storyteller.deckcraft.png"><action name="Execute"><command>/usr/bin/deckcraft</command></action></item>
-<item label="CADCraft" icon="/usr/share/icons/hicolor/48x48/apps/ai.storyteller.cadcraft.png"><action name="Execute"><command>/usr/bin/cadcraft</command></action></item>
-<item label="GridCraft" icon="/usr/share/icons/hicolor/48x48/apps/ai.storyteller.gridcraft.png"><action name="Execute"><command>/usr/bin/gridcraft</command></action></item>
+<item label="VectorCraft" icon="/usr/share/icons/hicolor/48x48/apps/ai.storyteller.vectorcraft.png"><action name="Execute"><command>/usr/bin/vectorcraft</command></action></item>
+<item label="WordCraft" icon="/usr/share/icons/hicolor/48x48/apps/ai.storyteller.wordcraft.png"><action name="Execute"><command>/usr/bin/wordcraft</command></action></item>
 </menu>
 </openbox_menu>

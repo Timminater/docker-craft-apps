@@ -1,0 +1,155 @@
+name: Build and publish Craft Apps
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'Dockerfile*'
+      - 'root/**'
+      - '.github/scripts/**'
+      - '.github/tests/**'
+      - '.github/workflows/publish-ghcr.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: '17 3 * * 1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: craft-apps-publish
+  cancel-in-progress: false
+
+jobs:
+  update:
+    if: github.repository == 'Timminater/docker-craft-apps' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    outputs:
+      commit: ${{ steps.commit.outputs.sha }}
+      image: ${{ steps.commit.outputs.image }}
+      tag: ${{ steps.commit.outputs.tag }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: master
+      - name: Test updater
+        run: python3 -m unittest discover -s .github/tests -v
+      - name: Discover apps and resolve latest stable releases
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 .github/scripts/update-craft-apps.py
+      - name: Commit verified catalog and release changes
+        id: commit
+        env:
+          REPOSITORY: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add Dockerfile Dockerfile.aarch64 root/defaults/autostart root/defaults/autostart_wayland root/defaults/menu.xml root/defaults/menu_wayland.xml root/defaults/craft-releases.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Update Craft app catalog and releases'
+            git push origin HEAD:master
+          fi
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "image=ghcr.io/${REPOSITORY,,}" >> "$GITHUB_OUTPUT"
+          echo "tag=build-${RUN_ID}-${RUN_ATTEMPT}" >> "$GITHUB_OUTPUT"
+          printf '### Verified Craft releases\n\n```json\n' >> "$GITHUB_STEP_SUMMARY"
+          cat root/defaults/craft-releases.json >> "$GITHUB_STEP_SUMMARY"
+          printf '```\n' >> "$GITHUB_STEP_SUMMARY"
+
+  build:
+    needs: update
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-24.04
+            platform: linux/amd64
+            file: Dockerfile
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+            platform: linux/arm64
+            file: Dockerfile.aarch64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.update.outputs.commit }}
+          persist-credentials: false
+      - name: Prepare build inputs
+        id: inputs
+        run: |
+          echo "releases=$(jq -c . root/defaults/craft-releases.json)" >> "$GITHUB_OUTPUT"
+          echo "date=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - name: Build native image for testing
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          file: ${{ matrix.file }}
+          platforms: ${{ matrix.platform }}
+          pull: true
+          no-cache: true
+          load: true
+          provenance: false
+          tags: craft-apps:test
+          build-args: |
+            BUILD_DATE=${{ steps.inputs.outputs.date }}
+            VERSION=${{ needs.update.outputs.tag }}
+            CRAFT_RELEASES=${{ steps.inputs.outputs.releases }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ needs.update.outputs.commit }}
+            org.opencontainers.image.title=Craft Apps community fork
+      - name: Test installed releases, desktop startup and restart
+        run: bash .github/scripts/smoke-test.sh craft-apps:test
+      - name: Log in to GHCR
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publish tested architecture image
+        env:
+          IMAGE: ${{ needs.update.outputs.image }}
+          TAG: ${{ needs.update.outputs.tag }}
+          ARCH: ${{ matrix.arch }}
+        run: |
+          docker tag craft-apps:test "${IMAGE}:${TAG}-${ARCH}"
+          docker push "${IMAGE}:${TAG}-${ARCH}"
+
+  publish:
+    needs: [update, build]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      packages: write
+    steps:
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publish multi-architecture latest tag
+        env:
+          IMAGE: ${{ needs.update.outputs.image }}
+          TAG: ${{ needs.update.outputs.tag }}
+        run: |
+          set -euo pipefail
+          docker buildx imagetools create --tag "${IMAGE}:${TAG}" --tag "${IMAGE}:latest" "${IMAGE}:${TAG}-amd64" "${IMAGE}:${TAG}-arm64"
+          docker buildx imagetools create --tag "${IMAGE}:amd64-latest" "${IMAGE}:${TAG}-amd64"
+          docker buildx imagetools create --tag "${IMAGE}:arm64v8-latest" "${IMAGE}:${TAG}-arm64"
+          docker buildx imagetools inspect "${IMAGE}:latest"
+          printf '### Published\n\n`docker pull %s:latest`\n\nPlatforms: linux/amd64 and linux/arm64.\n' "$IMAGE" >> "$GITHUB_STEP_SUMMARY"
