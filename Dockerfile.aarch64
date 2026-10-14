@@ -1,0 +1,86 @@
+# syntax=docker/dockerfile:1
+
+FROM ghcr.io/linuxserver/baseimage-selkies:arm64v8-ubunturesolute
+
+# set version label
+ARG BUILD_DATE
+ARG VERSION
+ARG PHOTOCRAFT_RELEASE
+LABEL build_version="Linuxserver.io version:- ${VERSION} Build-date:- ${BUILD_DATE}"
+LABEL maintainer="thelamer"
+
+# title
+ENV TITLE="Craft Apps" \
+    NO_FULL=true \
+    SELKIES_DESKTOP=true \
+    PIXELFLUX_WAYLAND=true
+
+RUN \
+  echo "**** add icon ****" && \
+  curl -o \
+    /usr/share/selkies/www/icon.png \
+    https://raw.githubusercontent.com/linuxserver/docker-templates/master/linuxserver.io/img/artcraft-logo.png && \
+  echo "**** install packages ****" && \
+  add-apt-repository ppa:xtradeb/apps && \
+  apt-get update && \
+  apt-get install -y --no-install-recommends \
+    caja \
+    chromium \
+    chromium-l10n \
+    libegl1 \
+    xdg-desktop-portal \
+    xdg-desktop-portal-gtk && \
+  echo "**** install photocraft ****" && \
+  if [ -z ${PHOTOCRAFT_RELEASE+x} ]; then \
+    PHOTOCRAFT_RELEASE=$(curl -sX GET "https://api.github.com/repos/storytold/photocraft/releases/latest" \
+      | jq -r '.tag_name'); \
+  fi && \
+  curl -o \
+    /tmp/photocraft.deb -L \
+    "https://github.com/storytold/photocraft/releases/download/${PHOTOCRAFT_RELEASE}/photocraft-$(echo ${PHOTOCRAFT_RELEASE} | sed 's/^v//g')-linux-aarch64.deb" && \
+  echo "**** install craft suite ****" && \
+  for APP in designcraft effectcraft filmcraft lightcraft pdfcraft vectorcraft; do \
+    APP_RELEASE=$(curl -sX GET "https://api.github.com/repos/storytold/${APP}/releases/latest" \
+      | jq -r '.tag_name') && \
+    curl -o \
+      /tmp/${APP}.deb -L \
+      "https://github.com/storytold/${APP}/releases/download/${APP_RELEASE}/${APP}-$(echo ${APP_RELEASE} | sed 's/^v//g')-linux-aarch64.deb"; \
+  done && \
+  apt-get install -y --no-install-recommends \
+    /tmp/*.deb && \
+  echo "**** application tweaks ****" && \
+  mv \
+    /usr/bin/chromium \
+    /usr/bin/chromium-real && \
+  sed -i \
+    's/^Icon=.*/Icon=system-file-manager-symbolic/' \
+    /usr/share/applications/caja.desktop && \
+  echo "**** cleanup ****" && \
+  apt-get autoclean && \
+  rm -rf \
+    /config/.cache \
+    /tmp/* \
+    /usr/share/applications/caja-autorun-software.desktop \
+    /usr/share/applications/caja-browser.desktop \
+    /usr/share/applications/caja-computer.desktop \
+    /usr/share/applications/caja-file-management-properties.desktop \
+    /usr/share/applications/caja-folder-handler.desktop \
+    /usr/share/applications/caja-home.desktop \
+    /usr/share/applications/debian-uxterm.desktop \
+    /usr/share/applications/debian-xterm.desktop \
+    /usr/share/applications/footclient.desktop \
+    /usr/share/applications/foot-server.desktop \
+    /usr/share/applications/mate-about.desktop \
+    /usr/share/applications/mate-color-select.desktop \
+    /usr/share/applications/mate-network-scheme.desktop \
+    /usr/share/applications/st.desktop \
+    /var/lib/apt/lists/* \
+    /var/tmp/*
+
+# add local files
+COPY /root /
+
+# ports and volumes
+EXPOSE 3001
+
+VOLUME /config
