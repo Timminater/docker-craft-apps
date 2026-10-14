@@ -107,6 +107,28 @@ def render(root, releases, labels):
         entries = "".join(f'<item label="{labels[app]}" icon="/usr/share/icons/hicolor/48x48/apps/ai.storyteller.{app}.png"><action name="Execute"><command>/usr/bin/{app}</command></action></item>\n' for app in apps)
         changes[path] = text.replace("</menu>", entries + "</menu>")
     changes[MANIFEST] = json.dumps(releases, indent=2, sort_keys=True) + "\n"
+    template = root / ".github/fork-readme.md"
+    if template.exists():
+        header = template.read_text()
+        rows = "| App | Stable version |\n| --- | --- |\n" + "".join(
+            f"| [{labels[app]}](https://github.com/storytold/{app}) | {releases[app]} |\n"
+            for app in apps
+        )
+        # Keep introductory counts correct when the catalog grows beyond thirteen apps.
+        header = header.replace("**13 apps**", f"**{len(apps)} apps**").replace("__CRAFT_APPS__", rows)
+        readme = (root / "README.md").read_text()
+        start, end = "<!-- craft-fork:start -->", "<!-- craft-fork:end -->"
+        if start in readme:
+            readme = readme.split(end, 1)[1].lstrip("\n")
+        variables = (root / "readme-vars.yml").read_text()
+        blurb = json.loads(re.search(r'^project_blurb: (".*")$', variables, re.MULTILINE)[1])
+        project_url = json.loads(re.search(r'^project_url: (".*")$', variables, re.MULTILINE)[1])
+        blurb = blurb.replace("{{ project_url }}", project_url)
+        readme = re.sub(r'^\[ArtCraft\]\([^\n]+ in a single desktop\.$', lambda _: blurb, readme, flags=re.MULTILINE)
+        readme = readme.replace("lscr.io/linuxserver/craft-apps", "ghcr.io/timminater/docker-craft-apps")
+        readme = readme.replace("git clone https://github.com/linuxserver/docker-craft-apps.git", "git clone https://github.com/Timminater/docker-craft-apps.git")
+        readme = readme.replace("amd64-\\<version tag\\>", "amd64-latest").replace("arm64v8-\\<version tag\\>", "arm64v8-latest")
+        changes[Path("README.md")] = start + "\n" + header.rstrip() + "\n" + end + "\n\n" + readme
     return changes
 
 

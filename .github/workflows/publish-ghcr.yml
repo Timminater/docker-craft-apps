@@ -7,6 +7,7 @@ on:
       - 'Dockerfile*'
       - 'root/**'
       - '.github/scripts/**'
+      - '.github/fork-readme.md'
       - '.github/tests/**'
       - '.github/workflows/publish-ghcr.yml'
   workflow_dispatch:
@@ -51,7 +52,7 @@ jobs:
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add Dockerfile Dockerfile.aarch64 root/defaults/autostart root/defaults/autostart_wayland root/defaults/menu.xml root/defaults/menu_wayland.xml root/defaults/craft-releases.json
+          git add Dockerfile Dockerfile.aarch64 root/defaults/autostart root/defaults/autostart_wayland root/defaults/menu.xml root/defaults/menu_wayland.xml root/defaults/craft-releases.json README.md
           if ! git diff --cached --quiet; then
             git commit -m 'Update Craft app catalog and releases'
             git push origin HEAD:master

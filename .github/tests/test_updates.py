@@ -58,7 +58,7 @@ class UpdateTests(unittest.TestCase):
 
     def fixture(self, directory):
         root = Path(directory)
-        for name in ("Dockerfile", "Dockerfile.aarch64", "root/defaults/autostart", "root/defaults/autostart_wayland", "root/defaults/menu.xml", "root/defaults/menu_wayland.xml"):
+        for name in ("Dockerfile", "Dockerfile.aarch64", "root/defaults/autostart", "root/defaults/autostart_wayland", "root/defaults/menu.xml", "root/defaults/menu_wayland.xml", ".github/fork-readme.md", "README.md", "readme-vars.yml"):
             target = root / name
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(updater.ROOT / name, target)
@@ -84,6 +84,8 @@ class UpdateTests(unittest.TestCase):
                 self.assertIn("newcraft", (root / name).read_text())
             for name in ("menu.xml", "menu_wayland.xml"):
                 self.assertEqual((root / "root/defaults" / name).read_text().count("/usr/bin/newcraft</command>"), 1)
+            self.assertIn("| [Newcraft](https://github.com/storytold/newcraft) | v1.2.3 |", (root / "README.md").read_text())
+            self.assertEqual((root / "README.md").read_text().count("<!-- craft-fork:start -->"), 1)
             before = {file: file.read_bytes() for file in root.rglob("*") if file.is_file()}
             updater.update(root, self.get)
             self.assertEqual(before, {file: file.read_bytes() for file in root.rglob("*") if file.is_file()})
