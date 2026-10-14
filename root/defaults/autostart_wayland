@@ -1,7 +1,7 @@
 #!/bin/bash
 
 mkdir -p "${HOME}/Desktop"
-for APP in photocraft vectorcraft filmcraft lightcraft pdfcraft effectcraft designcraft; do
+for APP in photocraft vectorcraft filmcraft lightcraft pdfcraft effectcraft designcraft figcraft wordcraft soundcraft deckcraft cadcraft gridcraft; do
   if [ ! -f "${HOME}/Desktop/ai.storyteller.${APP}.desktop" ]; then
     cp "/usr/share/applications/ai.storyteller.${APP}.desktop" "${HOME}/Desktop/"
   fi

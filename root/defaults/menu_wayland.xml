@@ -11,5 +11,11 @@
 <item label="PdfCraft" icon="/usr/share/icons/hicolor/48x48/apps/ai.storyteller.pdfcraft.png"><action name="Execute"><command>/usr/bin/pdfcraft</command></action></item>
 <item label="EffectCraft" icon="/usr/share/icons/hicolor/48x48/apps/ai.storyteller.effectcraft.png"><action name="Execute"><command>/usr/bin/effectcraft</command></action></item>
 <item label="DesignCraft" icon="/usr/share/icons/hicolor/48x48/apps/ai.storyteller.designcraft.png"><action name="Execute"><command>/usr/bin/designcraft</command></action></item>
+<item label="FigCraft" icon="/usr/share/icons/hicolor/48x48/apps/ai.storyteller.figcraft.png"><action name="Execute"><command>/usr/bin/figcraft</command></action></item>
+<item label="WordCraft" icon="/usr/share/icons/hicolor/48x48/apps/ai.storyteller.wordcraft.png"><action name="Execute"><command>/usr/bin/wordcraft</command></action></item>
+<item label="SoundCraft" icon="/usr/share/icons/hicolor/48x48/apps/ai.storyteller.soundcraft.png"><action name="Execute"><command>/usr/bin/soundcraft</command></action></item>
+<item label="DeckCraft" icon="/usr/share/icons/hicolor/48x48/apps/ai.storyteller.deckcraft.png"><action name="Execute"><command>/usr/bin/deckcraft</command></action></item>
+<item label="CADCraft" icon="/usr/share/icons/hicolor/48x48/apps/ai.storyteller.cadcraft.png"><action name="Execute"><command>/usr/bin/cadcraft</command></action></item>
+<item label="GridCraft" icon="/usr/share/icons/hicolor/48x48/apps/ai.storyteller.gridcraft.png"><action name="Execute"><command>/usr/bin/gridcraft</command></action></item>
 </menu>
 </openbox_menu>

@@ -32,19 +32,19 @@ RUN \
     xdg-desktop-portal-gtk && \
   echo "**** install photocraft ****" && \
   if [ -z ${PHOTOCRAFT_RELEASE+x} ]; then \
-    PHOTOCRAFT_RELEASE=$(curl -sX GET "https://api.github.com/repos/storytold/photocraft/releases/latest" \
-      | jq -r '.tag_name'); \
+    PHOTOCRAFT_RELEASE=$(curl -fsSL "https://api.github.com/repos/storytold/photocraft/releases/latest" \
+      | jq -er '.tag_name | select(type == "string" and length > 0)') || exit 1; \
   fi && \
-  curl -o \
+  curl -f -o \
     /tmp/photocraft.deb -L \
     "https://github.com/storytold/photocraft/releases/download/${PHOTOCRAFT_RELEASE}/photocraft-$(echo ${PHOTOCRAFT_RELEASE} | sed 's/^v//g')-linux-aarch64.deb" && \
   echo "**** install craft suite ****" && \
-  for APP in designcraft effectcraft filmcraft lightcraft pdfcraft vectorcraft; do \
-    APP_RELEASE=$(curl -sX GET "https://api.github.com/repos/storytold/${APP}/releases/latest" \
-      | jq -r '.tag_name') && \
-    curl -o \
+  for APP in cadcraft deckcraft designcraft effectcraft figcraft filmcraft gridcraft lightcraft pdfcraft soundcraft vectorcraft wordcraft; do \
+    APP_RELEASE=$(curl -fsSL "https://api.github.com/repos/storytold/${APP}/releases/latest" \
+      | jq -er '.tag_name | select(type == "string" and length > 0)') && \
+    curl -f -o \
       /tmp/${APP}.deb -L \
-      "https://github.com/storytold/${APP}/releases/download/${APP_RELEASE}/${APP}-$(echo ${APP_RELEASE} | sed 's/^v//g')-linux-aarch64.deb"; \
+      "https://github.com/storytold/${APP}/releases/download/${APP_RELEASE}/${APP}-$(echo ${APP_RELEASE} | sed 's/^v//g')-linux-aarch64.deb" || exit 1; \
   done && \
   apt-get install -y --no-install-recommends \
     /tmp/*.deb && \
