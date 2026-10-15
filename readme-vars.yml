@@ -30,13 +30,15 @@ show_nvidia: true
 # application setup block
 app_setup_block_enabled: true
 app_setup_block: |
+  **This community fork is no longer maintained as of 15 October 2026.** All further development takes place in [Docker Craft Portal](https://github.com/Timminater/docker-craft-portal). No further app updates, fixes or security updates are planned for this fork. The instructions below are retained for reference only.
+
   The application can be accessed at:
 
   * https://yourhost:3001/
 
   Apps from the official catalog at https://getartcraft.com/apps are included. The verified release inventory is recorded in root/defaults/craft-releases.json. GitHub Actions checks the catalog and latest stable releases on each build, commits compatible new apps and version changes, and builds native x86-64 and ARM64 images from that same inventory. New apps must provide both Debian packages and the expected desktop launcher; incompatible changes fail for manual review. Apps are never automatically removed.
 
-  Images are published at ghcr.io/timminater/docker-craft-apps:latest (both architectures), with amd64-latest and arm64v8-latest aliases. The build runs on relevant master pushes, manual dispatch and every Monday at 03:17 UTC. Scheduled builds also refresh the base image. Startup, installed package versions and restart with existing /config are checked before publishing. The multi-architecture latest tag is only updated after both architectures succeed.
+  Images are published at ghcr.io/timminater/docker-craft-apps:latest (both architectures), with amd64-latest and arm64v8-latest aliases. Automatic push and scheduled builds have stopped; the workflow is retained for explicit manual dispatch only. Startup, installed package versions and restart with existing /config are checked before publishing. The multi-architecture latest tag is only updated after both architectures succeed.
 
   Example:
 
